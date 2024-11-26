@@ -1,5 +1,6 @@
 import fs from "fs";
-import { getTodosPosts, addUser, criarPost } from "../models/postModel.js";
+import gerarDescricaoComGemini from "../services/geminiService.js";
+import { getTodosPosts, addUser, criarPost, actualizarPost } from "../models/postModel.js";
 
 export async function listarPosts(req, res) {
   const posts = await getTodosPosts();
@@ -31,6 +32,29 @@ export async function uploadImagem(req, res) {
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function actualizaNovoPost(req, res){
+  const postId = req.params.id;
+  const urlImagem = `http://localhost:3000/${postId}.jpg`;
+
+  try {
+    // Gerando buffer da imagem e criando descricao da imagem com Gemini
+    const imgBuffer = fs.readFileSync(`uploads/${postId}.jpg`);
+    const descricao = await gerarDescricaoComGemini(imgBuffer);
+
+    const post = {
+      imgUrl: urlImagem,
+      descricao,
+      alt: req.body.alt
+    }
+
+    const postActualizado = await actualizarPost(postId, post);
+    res.status(200).json(postActualizado);
+  } catch(error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Internal server error" })
   }
 }
 
