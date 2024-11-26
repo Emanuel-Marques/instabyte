@@ -1,5 +1,4 @@
 import express from "express";
-import conectarAoBanco from "./src/config/dbconfig.js";
 import routes from "./src/routes/postsRoutes.js";
 
 const app = express();
